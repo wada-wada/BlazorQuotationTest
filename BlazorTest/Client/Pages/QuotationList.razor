@@ -53,5 +53,5 @@ else
     protected override async Task OnInitializedAsync()
     {
         quotations = await Http.GetFromJsonAsync<IEnumerable<Quotation>>("api/Quotations");
-    }   
+    }
 }
