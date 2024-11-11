@@ -1,0 +1,76 @@
+﻿<!--請求書UI（ダミーデータ）-->
+@page "/Invoice/{Id:int}"
+@inject BlazorTest.Client.Services.InvoiceServiceDummyValue InvoiceService
+@inject HttpClient Http
+@using BlazorTest.Client.Models
+
+<h3>請求書(ダミーデータ、一覧画面から遷移)</h3>
+
+@if(currentInvoice != null)
+{
+    <EditForm Model="@currentInvoice">
+        <div>
+            <label>ID</label>
+            <span>@currentInvoice?.Id</span>
+        </div>
+        <div>
+            <label>請求書番号：</label>
+            <span>@currentInvoice?.InvoiceNumber</span>
+        </div>
+        <div>
+            <label>請求日：</label>
+            <span>@currentInvoice?.InvoiceDate.ToString("yyyy-MM-dd")</span>
+        </div>
+        <div>
+            <label>顧客名：</label>
+            <span>@currentInvoice?.CustomerName</span>
+        </div>
+        <div><p></p></div>
+
+        <h4>項目リスト</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>説明</th>
+                    <th>数量</th>
+                    <th>単価</th>
+                    <th>金額</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in currentInvoice?.Items ?? Enumerable.Empty<InvoiceItem>())
+                {
+                    <tr>
+                        <td>@item.Description</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.UnitPrice</td>
+                        <td>@item.Amount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div>
+            <label>合計金額：</label>
+            <span>@currentInvoice?.TotalAmount</span>
+        </div>
+    
+    </EditForm>
+}
+else
+{
+    <p>Loading</p>
+}
+
+@code{
+    [Parameter]
+    public int Id { get; set; }
+
+    private InvoiceModel? currentInvoice;
+
+    protected override void OnInitialized()
+    {
+        currentInvoice = InvoiceService.GetSampleInvoices().FirstOrDefault(i => i.Id == Id);
+    }
+}
+

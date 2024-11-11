@@ -1,0 +1,54 @@
+﻿@page "/quotation-detail"
+@inject HttpClient Http
+@using BlazorTest.Client.Models;
+
+<h3>請求書画面(Quotation ID: @quotationId)</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>QuotationItemId</th>
+            <th>QuotationId</th>
+            <th>ProductName</th>
+            <th>Quantity</th>
+            <th>UnitPrice</th>
+            <th>LineTotal</th>
+            <th>UpdateDate</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if(quotationItems != null)
+        {
+            @foreach(var item in quotationItems)
+            {
+                <tr>
+                    <td>@item.Quotation_Item_Id</td>
+                    <td>@item.Quotation_Id</td>
+                    <td>@item.Product_Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Unit_Price</td>
+                    <td>@item.Line_Total</td>
+                    <td>@item.Update_Date.ToShortDateString()</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5">データを読み込み中...</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private int quotationId = 1;//固定値
+    private IEnumerable<QuotationItem>? quotationItems;
+
+    protected override async Task OnInitializedAsync()
+    {
+        quotationItems = await Http.GetFromJsonAsync<List<QuotationItem>>($"api/QuotationItems/{quotationId}");
+    }
+
+
+}

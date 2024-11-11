@@ -1,0 +1,58 @@
+﻿@page "/quotation-detail-link/{QuoationId:int}"
+@inject HttpClient Http
+@using BlazorTest.Client.Models
+
+<h3>請求書詳細画面（DB接続、一覧画面からリンク）</h3>
+@if(quotationItems != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>QuotationItemId</th>
+                <th>QuotationId</th>
+                <th>ProductName</th>
+                <th>Quantity</th>
+                <th>UnitPrice</th>
+                <th>LineTotal</th>
+                <th>UpdateDate</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+
+                @foreach (var item in quotationItems)
+                {
+                    <tr>
+                        <td>@item.Quotation_Item_Id</td>
+                        <td>@item.Quotation_Id</td>
+                        <td>@item.Product_Name</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Unit_Price</td>
+                        <td>@item.Line_Total</td>
+                        <td>@item.Update_Date.ToShortDateString()</td>
+                        <td>
+                            <button class="btn btn-secondary">Edit</button>
+                            <button class="btn btn-danger">Delete</button>
+                        </td>
+                    </tr>
+                }
+        </tbody>
+    </table>
+    <button class="btn btn-success">Add</button>
+    }
+else
+{
+    <p>データ読み込み中</p>
+}
+@code {
+    [Parameter]
+    public int QuoationId { get; set; }
+
+    private IEnumerable<QuotationItem>? quotationItems;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        quotationItems = await Http.GetFromJsonAsync<IEnumerable<QuotationItem>>($"api/QuotationItems/{QuoationId}");
+    }
+
+}

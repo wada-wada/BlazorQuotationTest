@@ -1,0 +1,75 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">BlazorTest</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="counter">
+                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="fetchdata">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            </NavLink>
+        </div>
+        <!--請求書追加-->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="invoice">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Invoice
+            </NavLink>
+        </div>
+        <!--請求書一覧追加-->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="invoicelist">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> InvoiceList
+            </NavLink>
+        </div>
+        <!--請求書追加（WebAPI経由ダミーデータ）-->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="invoices">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> InvoiceWebAPIDummyValue
+            </NavLink>
+        </div>
+        <!--請求書一覧追加（WebAPI経由ダミーデータ）-->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="invoiceslist">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> InvoiceListWebAPIDummyValue
+            </NavLink>
+        </div>
+        <!--請求書追加（DB接続）-->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="quotation-detail">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> QuotationDetail
+            </NavLink>
+        </div>
+        <!--請求書一覧追加（DB接続）-->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="quotationlist">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> QuotationList
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

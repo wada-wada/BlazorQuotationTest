@@ -1,0 +1,57 @@
+﻿@page "/quotationlist"
+@inject HttpClient Http
+@using BlazorTest.Client.Models;
+
+<h3>請求書一覧</h3>
+
+@if(quotations == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>QuotationId</th>
+                <th>QuotationDate</th>
+                <th>TotalAmaount</th>
+                <th>UpdateDate</th>
+                <th>ExpirationDate</th>
+                <th>CreatedDate</th>
+                <th>Status</th>
+                <th>Action </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var quote in quotations)
+            {
+                <tr>
+                    <td>
+                        <a href="/quotation-detail-link/@quote.Quotation_Id">@quote.Quotation_Id</a>
+                    </td>
+                    <td>@quote.Quotation_Date.ToShortDateString()</td>
+                    <td>@quote.Total_Amount</td>
+                    <td>@quote.Update_Date.ToShortDateString()</td>
+                    <td>@quote.Expiration_Date.ToShortDateString()</td>
+                    <td>@quote.Created_Date.ToShortDateString()</td>
+                    <td>@quote.Status</td>
+                    <td>
+                        <button class="btn btn-danger">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-success">Add</button>
+
+}
+
+@code {
+    private IEnumerable<Quotation>? quotations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        quotations = await Http.GetFromJsonAsync<IEnumerable<Quotation>>("api/Quotations");
+    }   
+}

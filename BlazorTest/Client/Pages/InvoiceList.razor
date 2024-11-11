@@ -1,0 +1,48 @@
+﻿<!--請求書一覧UI　ダミーデータ-->
+@page "/invoicelist"
+@inject BlazorTest.Client.Services.InvoiceListSeriviceDummyValues InvoiceListServiceDummyValues
+@inject HttpClient Http
+@using BlazorTest.Client.Models
+
+<h3>請求書一覧（ダミーデータ）</h3>
+
+@if (invoicesList != null && invoicesList.Count != 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>InvoiceID</th>           
+                <th>Customer Name</th>
+                <th>Amount</th>
+                <th>InvoiceDate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var invoicesLine in invoicesList)
+            {
+                <tr>
+                    <td>@invoicesLine.Id</td>
+                    <td>
+                        <a href="/Invoice/@invoicesLine.Id">@invoicesLine.InvoiceNumber</a>
+                    </td>
+                    <td>@invoicesLine.CustomerName</td>
+                    <td>@invoicesLine.TotalAmount</td>
+                    <td>@invoicesLine.InvoiceDate.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>loading...</p>
+}
+
+@code{
+    private List<InvoiceModel>?invoicesList;
+    protected override void OnInitialized()
+    {
+        invoicesList = InvoiceListServiceDummyValues.GetSampleInvoiceList();
+    }
+}

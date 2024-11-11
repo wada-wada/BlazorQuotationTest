@@ -1,0 +1,52 @@
+﻿@page "/invoices"
+@inject BlazorTest.Client.Services.InvoiceServicesWebAPIDummy InvoiceServicesWebAPIDummy
+@using BlazorTest.Client.Models
+
+<h3>請求書(WebAPI経由、ダミーデータ)</h3>
+
+@if (invoices == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @foreach (var invoice in invoices)
+    {
+        <div>
+            <h4>Invoice @invoice.InvoiceNumber</h4>
+            <p>Customer: @invoice.CustomerName</p>
+            <p>Date: @invoice.InvoiceDate.ToShortDateString()</p>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in invoice.Items)
+                    {
+                        <tr>
+                            <td>@item.Description</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.UnitPrice</td>
+                            <td>@item.Amount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    private List<InvoiceModel>? invoices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        invoices = await InvoiceServicesWebAPIDummy.GetInvoicesAsync();
+    }
+}
+

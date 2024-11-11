@@ -1,0 +1,50 @@
+﻿<!--WebAPIからデータを取得して表示する（ダミーデータ）-->
+@page "/invoiceslist"
+@inject BlazorTest.Client.Services.InvoiceListServicesWebAPIDummy InvoiceListServicesWebAPIDummy
+@using BlazorTest.Client.Models;
+
+<h3>請求書一覧(WebAPI経由、ダミーデータ)</h3>
+
+@if (invoicesList == null)//invoicesListはnullを許容しているのでnullチェックを行う
+{
+    <p>読み込み中...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>請求書番号</th>
+                <th>顧客名</th>
+                <th>金額</th>
+                <th>日付</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var invoiceLine in invoicesList)
+            {
+                <tr>
+                    <td>@invoiceLine.Id</td>
+                    <td>
+                        <a href="/Invoices/@invoiceLine.Id">
+                            @invoiceLine.InvoiceNumber
+                        </a>
+                    </td>
+                    <td>@invoiceLine.CustomerName</td>
+                    <td>@invoiceLine.TotalAmount</td>
+                    <td>@invoiceLine.InvoiceDate.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code{
+    private List<InvoiceModel>? invoicesList;//null許容に変更
+    protected override async Task OnInitializedAsync()
+    {
+        invoicesList = await InvoiceListServicesWebAPIDummy.GetInvoiceListAsync();
+    }
+   
+}
