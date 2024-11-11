@@ -23,6 +23,29 @@
                 @foreach (var item in quotationItems)
                 {
                     <tr>
+                        @if(editingItem != null && editingItem.Quotation_Item_Id == item.Quotation_Item_Id)
+                        {
+                            <td>@item.Quotation_Item_Id</td>
+                            <td>@item.Quotation_Id</td>
+                            <td>
+                                <InputText @bind-Value="editingItem.Product_Name"/></td>
+                            <td>
+                                <InputNumber @bind-Value="editingItem.Quantity"/>
+                            </td>
+                            <td>
+                                <InputNumber @bind-Value="editingItem.Unit_Price"/>
+                            </td>
+                            <td>
+                                <InputNumber @bind-Value="editingItem.Line_Total"/>
+                            </td>
+                            <td>@item.Update_Date.ToShortDateString()</td>
+                            <td>
+                                <button class="btn btn-secondary" @onclick="() => SaveEdit(item.Quotation_Item_Id)">Save</button>
+                                <button class="btn btn-danger" @onclick="CancelEdit">Cancel</button>
+                            </td>
+                    }
+                    else
+                    {
                         <td>@item.Quotation_Item_Id</td>
                         <td>@item.Quotation_Id</td>
                         <td>@item.Product_Name</td>
@@ -31,15 +54,20 @@
                         <td>@item.Line_Total</td>
                         <td>@item.Update_Date.ToShortDateString()</td>
                         <td>
-                            <button class="btn btn-secondary">Edit</button>
-                            <button class="btn btn-danger">Delete</button>
+                            <button class="btn btn-secondary" @onclick="() => StartEdit(item)">Edit</button>
+                            <button class="btn btn-danger" @onclick="() => DeleteQuotationItem(item.Quotation_Item_Id)">Delete</button>
                         </td>
-                    </tr>
+                    }
+                </tr>
                 }
         </tbody>
     </table>
     <button class="btn btn-success">Add</button>
+    @if (responseErrorMessage != string.Empty)
+    {
+        <p>@responseErrorMessage</p>
     }
+}
 else
 {
     <p>データ読み込み中</p>
@@ -48,11 +76,67 @@ else
     [Parameter]
     public int QuoationId { get; set; }
 
-    private IEnumerable<QuotationItem>? quotationItems;
+    private List<QuotationItem>? quotationItems;
 
     protected override async Task OnParametersSetAsync()
     {
-        quotationItems = await Http.GetFromJsonAsync<IEnumerable<QuotationItem>>($"api/QuotationItems/{QuoationId}");
+        quotationItems = await Http.GetFromJsonAsync<List<QuotationItem>>($"api/QuotationItems/{QuoationId}");
     }
 
+    //編集処理
+    private QuotationItem? editingItem;
+    private void StartEdit(QuotationItem item)
+    {
+        editingItem = new QuotationItem
+        {
+            Quotation_Item_Id = item.Quotation_Item_Id,
+            Quotation_Id = item.Quotation_Id,
+            Product_Name = item.Product_Name,
+            Quantity = item.Quantity,
+            Unit_Price = item.Unit_Price,
+            Line_Total = item.Line_Total,
+            Update_Date = item.Update_Date
+        };
+    }
+    private void CancelEdit()
+    {
+        responseErrorMessage = string.Empty;
+        editingItem = null;
+    }
+
+    string responseErrorMessage = string.Empty;
+    private async Task SaveEdit(int itemId)
+    {
+        responseErrorMessage = string.Empty;
+
+        var response = await Http.PutAsJsonAsync($"api/QuotationItems/{QuoationId}/{itemId}", editingItem);
+        if (response.IsSuccessStatusCode)
+        {
+            var index = quotationItems.FindIndex(i => i.Quotation_Item_Id == itemId);
+            if(index != -1)
+            {
+                quotationItems[index] = editingItem;
+            }
+            editingItem = null;
+        }
+        else
+        {
+            responseErrorMessage = "Failed to update the item.";
+        }
+    }
+
+    //削除処理
+    private async Task DeleteQuotationItem(int itemId)
+    {
+        var response = await Http.DeleteAsync($"api/QuotationItems/{QuoationId}/{itemId}");
+        if (response.IsSuccessStatusCode)
+        {
+            quotationItems.RemoveAll(i => i.Quotation_Item_Id == itemId);
+        }
+        else
+        {
+            responseErrorMessage = "削除に失敗しました";
+        }
+
+    }
 }
