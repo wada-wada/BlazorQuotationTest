@@ -14,6 +14,7 @@ else
         <thead>
             <tr>
                 <th>QuotationId</th>
+                <th>QuotationName</th>
                 <th>QuotationDate</th>
                 <th>TotalAmaount</th>
                 <th>UpdateDate</th>
@@ -27,31 +28,82 @@ else
             @foreach(var quote in quotations)
             {
                 <tr>
-                    <td>
-                        <a href="/quotation-detail-link/@quote.Quotation_Id">@quote.Quotation_Id</a>
-                    </td>
-                    <td>@quote.Quotation_Date.ToShortDateString()</td>
-                    <td>@quote.Total_Amount</td>
-                    <td>@quote.Update_Date.ToShortDateString()</td>
-                    <td>@quote.Expiration_Date.ToShortDateString()</td>
-                    <td>@quote.Created_Date.ToShortDateString()</td>
-                    <td>@quote.Status</td>
-                    <td>
-                        <button class="btn btn-danger">Delete</button>
-                    </td>
+                    @if (quote.IsNew)
+                    {
+                        <td>
+                        </td>
+                        <td><input @bind="quote.Quotation_Name"></td>
+                        <td></td>
+                        <td><input type="number" @bind="quote.Total_Amount"></td>
+                        <td></td>
+                        <td><input type="date" @bind="quote.Expiration_Date"></td>
+                        <td></td>
+                        <td><input @bind="quote.Status"></td>
+                        <td>
+                            <button class="btn btn-success">Edit</button>
+                            <button class="btn btn-secondary">cancel</button>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <a href="/quotation-detail-all-edit/@quote.Quotation_Id">@quote.Quotation_Id</a>
+                        </td>
+                        <td>@quote.Quotation_Name</td>
+                        <td>@quote.Quotation_Date.ToShortDateString()</td>
+                        <td>@quote.Total_Amount</td>
+                        <td>@quote.Update_Date.ToShortDateString()</td>
+                        <td>@quote.Expiration_Date.ToShortDateString()</td>
+                        <td>@quote.Created_Date.ToShortDateString()</td>
+                        <td>@quote.Status</td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="() => DeleteQuotation(quote.Quotation_Id)">Delete</button>
+                            @if (errorMessage != string.Empty)
+                            {
+                                <p>削除に失敗しました</p>
+                            }
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
     </table>
-    <button class="btn btn-success">Add</button>
+    <button class="btn btn-success" @onclick="AddQuotation">Add</button>
 
 }
 
 @code {
-    private IEnumerable<Quotation>? quotations;
+    private List<Quotation>? quotations;
+    string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        quotations = await Http.GetFromJsonAsync<IEnumerable<Quotation>>("api/Quotations");
+        quotations = await Http.GetFromJsonAsync<List<Quotation>>("api/Quotations");
+    }
+
+    //削除処理
+    private async Task DeleteQuotation(int quotationId)
+    {
+        var responseDelete = await Http.DeleteAsync($"api/Quotations/{quotationId}/delete");
+        if (responseDelete.IsSuccessStatusCode)
+        {
+            errorMessage = string.Empty;
+            quotations = quotations?.Where(i => i.Quotation_Id != quotationId).ToList();
+        }
+        else
+        {
+            errorMessage = "削除に失敗しました";
+        }
+    }
+
+    //行追加
+    private void AddQuotation()
+    {
+        var newItem = new Quotation
+        {
+            IsNew = true
+        };
+
+        quotations?.Add(newItem);
     }
 }

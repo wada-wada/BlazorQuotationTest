@@ -1,0 +1,134 @@
+﻿@page "/quotation-detail-all-edit/{QuotationId:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using BlazorTest.Client.Models
+
+<h3>請求書詳細画面（請求書名、明細複数行更新）</h3>
+
+<EditForm Model="@quotationRequest" OnValidSubmit="HandleSubmit">
+
+    <h4>請求書名：<input @bind="quotationRequest.Quotation.Quotation_Name"></h4>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>明細ID</th>
+                <th>商品</th>
+                <th>数量</th>
+                <th>単価</th>
+                <th>明細合計</th>
+                <th>更新日</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(quotationRequest.QuotationItems != null)
+            {
+                @foreach(var item in quotationRequest.QuotationItems)
+                {
+                    @if (item.IsDeleted)
+                    {
+                        
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>@item.Quotation_Item_Id</td>
+                            <td><input @bind="item.Product_Name"/></td>
+                            <td><input type="number" @bind="item.Quantity"></td>
+                            <td><input type="number" @bind="item.Unit_Price"/></td>
+                            <td>@item.Line_Total</td>
+                            <td>@item.Update_Date.ToShortDateString()</td>
+                            <td><button type="button" class="btn btn-danger" @onclick="() => MarkAsDeleted(item)">削除</button></td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-success" type="button" @onclick="AddQuotationItem">明細追加</button>
+    <button class="btn btn-success" type="submit">保存</button>
+    <p>@errorMessage</p>
+</EditForm>
+
+@code {
+    [Parameter] public int QuotationId { get; set; }
+    string errorMessage = string.Empty;
+    private QuotationRequest quotationRequest = new QuotationRequest
+    {
+        Quotation = new Quotation(),
+        QuotationItems = new List<QuotationItem>()
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        errorMessage = string.Empty;
+        quotationRequest.QuotationItems = await Http.GetFromJsonAsync<List<QuotationItem>>($"api/QuotationItems/{QuotationId}");
+        quotationRequest.Quotation = await Http.GetFromJsonAsync<Quotation>($"api/QuotationItems/{QuotationId}/quotationinfo");
+    }
+    //明細追加
+    private void AddQuotationItem()
+    {
+        var newItem = new QuotationItem
+        {
+            Quotation_Id = QuotationId,
+            IsNew = true
+        };
+        quotationRequest.QuotationItems?.Add(newItem);
+    }
+
+    //削除
+    private void MarkAsDeleted(QuotationItem deleteItem)
+    {
+        deleteItem.IsDeleted = true;
+        if(deleteItem.Quotation_Item_Id == 0)
+        {
+            quotationRequest.QuotationItems?.Remove(deleteItem);
+        }
+    }
+
+    //submitでフォーム送信時（保存ボタンを押したとき）にデータが保存されるようにする
+    private async Task HandleSubmit()
+    {
+        //トランザクションで処理するためコメントアウト
+        /*var response = await Http.PutAsJsonAsync($"api/QuotationItems/{QuotationId}/saveQuotationItems", quotationItems);
+
+        var responseQuotationName = await Http.PutAsJsonAsync($"api/QuotationItems/{QuotationId}/saveQuotationName", quotation);
+
+        var newQuotationItems = quotationItems.Where(i => i.IsNew && !string.IsNullOrWhiteSpace(i.Product_Name) && i.Quantity > 0 && i.Unit_Price > 0).ToList();
+            HttpResponseMessage responseNewQuotationItems = null;
+            if (newQuotationItems.Any())
+            {
+            responseNewQuotationItems = await Http.PostAsJsonAsync($"api/QuotationItems/{QuotationId}/createNewQuotationItems", newQuotationItems);
+        }
+
+
+        if (response.IsSuccessStatusCode || responseQuotationName.IsSuccessStatusCode || responseNewQuotationItems.IsSuccessStatusCode)
+            {
+            errorMessage = string.Empty;
+            Navigation.NavigateTo($"/quotationlist");
+            }
+            else
+            {
+            errorMessage = "更新に失敗しました。";
+        }*/
+        quotationRequest.QuotationItems ??= new List<QuotationItem>();
+        quotationRequest.QuotationItems = quotationRequest.QuotationItems
+                                            .Where(i => (i.IsDeleted) || !string.IsNullOrWhiteSpace(i.Product_Name)
+                                                        && i.Unit_Price > 0
+                                                        && i.Quantity > 0)
+                                            .ToList();
+        var response = await Http.PostAsJsonAsync($"api/QuotationItems/transaction", quotationRequest);
+        if (response.IsSuccessStatusCode)
+        {
+            errorMessage = string.Empty;
+            Navigation.NavigateTo($"/quotationlist");
+        }
+        else
+        {
+            errorMessage = "更新に失敗しました。";
+        }
+
+    }
+
+}
