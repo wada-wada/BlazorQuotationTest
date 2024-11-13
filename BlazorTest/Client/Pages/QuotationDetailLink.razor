@@ -1,10 +1,19 @@
-﻿@page "/quotation-detail-link/{QuoationId:int}"
+﻿@page "/quotation-detail-link/{QuotationId:int}"
 @inject HttpClient Http
 @using BlazorTest.Client.Models
 
 <h3>請求書詳細画面（DB接続、一覧画面からリンク）</h3>
 @if(quotationItems != null)
 {
+    @if(quotation != null)
+    {
+        <h4>請求書名：@quotation.Quotation_Name</h4>
+    }
+    else
+    {
+        <h4>請求書名が取得できません</h4>
+    }
+
     <table class="table">
         <thead>
             <tr>
@@ -74,13 +83,15 @@ else
 }
 @code {
     [Parameter]
-    public int QuoationId { get; set; }
+    public int QuotationId { get; set; }
 
+    private Quotation? quotation;
     private List<QuotationItem>? quotationItems;
 
     protected override async Task OnParametersSetAsync()
     {
-        quotationItems = await Http.GetFromJsonAsync<List<QuotationItem>>($"api/QuotationItems/{QuoationId}");
+        quotation = await Http.GetFromJsonAsync<Quotation>($"api/QuotationItems/{QuotationId}/quotationinfo");
+        quotationItems = await Http.GetFromJsonAsync<List<QuotationItem>>($"api/QuotationItems/{QuotationId}");
     }
 
     //編集処理
@@ -109,7 +120,7 @@ else
     {
         responseErrorMessage = string.Empty;
 
-        var response = await Http.PutAsJsonAsync($"api/QuotationItems/{QuoationId}/{itemId}", editingItem);
+        var response = await Http.PutAsJsonAsync($"api/QuotationItems/{QuotationId}/{itemId}", editingItem);
         if (response.IsSuccessStatusCode)
         {
             var index = quotationItems.FindIndex(i => i.Quotation_Item_Id == itemId);
@@ -128,7 +139,7 @@ else
     //削除処理
     private async Task DeleteQuotationItem(int itemId)
     {
-        var response = await Http.DeleteAsync($"api/QuotationItems/{QuoationId}/{itemId}");
+        var response = await Http.DeleteAsync($"api/QuotationItems/{QuotationId}/{itemId}");
         if (response.IsSuccessStatusCode)
         {
             quotationItems.RemoveAll(i => i.Quotation_Item_Id == itemId);

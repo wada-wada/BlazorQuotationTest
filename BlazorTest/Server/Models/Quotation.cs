@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace BlazorTest.Server.Models
+﻿namespace BlazorTest.Server.Models
 {
     public class Quotation
     {
@@ -12,6 +10,7 @@ namespace BlazorTest.Server.Models
         public DateTime Created_Date { get; set; }
         public DateTime Update_Date { get; set; }
         public string Status { get; set; }
+        public string Quotation_Name { get; set; }
 
     }
 }

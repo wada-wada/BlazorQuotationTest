@@ -31,5 +31,17 @@ namespace BlazorTest.Server.Controllers
             await _quotationService.AddQuotationAsync(quotation);
             return Ok();
         }
+
+        //削除処理
+        [HttpDelete("{quotationId}/delete")]
+        public async Task<IActionResult> DeleteQuotation(int quotationId)
+        {
+            bool isDeleted = await _quotationService.DeleteQuotationWithItems(quotationId);
+            if (isDeleted)
+            {
+                return NoContent();
+            }
+            return NotFound();
+        }
     }
 }

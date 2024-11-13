@@ -18,7 +18,7 @@ namespace BlazorTest.Server.Services
         {
             using (var connection = new NpgsqlConnection(_connectionString))
             {
-                var sql = "SELECT * FROM quotations";
+                var sql = "SELECT * FROM quotations ORDER BY quotation_id";
                 return await connection.QueryAsync<Quotation>(sql);
             }
         }
@@ -34,6 +34,35 @@ namespace BlazorTest.Server.Services
                         + "(@quotation_id, @customer_id, @quotation_date, @total_amount, @status,"
                         + "@expiration_date, @created_date, @update_date)";
                 await connection.ExecuteAsync(sql, quotation);
+            }
+        }
+
+        public async Task<bool> DeleteQuotationWithItems(int quotationId)
+        {
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                var deleteItemsQuery = "DELETE FROM quotationitems WHERE quotation_id = @Quotation_Id";
+                var deleteQuotationQuery = "DELETE FROM quotations WHERE quotation_id = @Quotation_Id";
+
+                await connection.OpenAsync();
+
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await connection.ExecuteAsync(deleteItemsQuery, new { Quotation_Id = quotationId }, transaction);
+                        int affectedRows = await connection.ExecuteAsync(deleteQuotationQuery, new { Quotation_Id = quotationId }, transaction);
+
+                        transaction.Commit();
+                        return affectedRows > 0;
+
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
             }
         }
     }

@@ -9,5 +9,6 @@
         public decimal Unit_Price { get; set; }
         public decimal Line_Total { get; set; }
         public DateTime Update_Date { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }
